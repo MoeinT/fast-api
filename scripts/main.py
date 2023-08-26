@@ -1,7 +1,16 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 app = FastAPI()
 
-@app.get("/items/")
-def read_item(skip: int = 0, limit: int = 10):
-    return {"skip": skip, "limit": limit}
+class Item(BaseModel):
+    name: str
+    description: str = None
+
+class ItemResponse(BaseModel):
+    item_id: int
+    item: Item
+
+@app.post("/items/", response_model=ItemResponse)
+def create_item(item: Item):
+    return {"item_id": 1, "item": item}
