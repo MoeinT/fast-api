@@ -1,16 +1,19 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
 
-class Item(BaseModel):
-    name: str
-    description: str = None
+templates = Jinja2Templates(directory="../templates")
 
-class ItemResponse(BaseModel):
-    item_id: int
-    item: Item
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    return templates.TemplateResponse(name="index.html", context={"request": request})
 
-@app.post("/items/", response_model=ItemResponse)
-def create_item(item: Item):
-    return {"item_id": 1, "item": item}
+@app.get("/about/", response_class=HTMLResponse)
+async def about_root(request: Request):
+    return templates.TemplateResponse(name="about.html", context={"request": request})
+
+@app.get("/contact/", response_class=HTMLResponse)
+async def contact_root(request: Request):
+    return templates.TemplateResponse(name="contact.html", context={"request": request})
