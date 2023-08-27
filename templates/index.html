@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome to FastAPI Website</title>
+</head>
+<body>
+    <h1>Welcome to Our Website!</h1>
+    <p>This is the home page of our FastAPI website.</p>
+    <p>Your IP address: {{ request.client.host }}</p>
+    <p>Your browser: {{ request.headers.get("user-agent") }}</p>
+    <a href="/about">About Us</a>
+    <br>
+    <a href="/contact">Contact Us</a>
+</body>
+</html>
