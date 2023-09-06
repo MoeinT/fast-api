@@ -56,9 +56,9 @@ class ItemResponse(BaseModel):
     item_id: int
     item: Item
 
-@app.post("/items/", response_model=ItemResponse)
-def create_item(item: Item):
-    return {"item_id": 1, "item": item}
+@app.post("/items/{item_id}", response_model=ItemResponse)
+def create_item(item: Item, item_id: int):
+    return {"item_id": item_id, "item": item}
 ```
 In the above application, a request body is expected from the user; this has a json format with two fields, name and description of type str. We've defined a class Item, which inherits from the BaseModel. We've also used the BaseModel class to specify the structure of the returned response by the API. This will be a json with two fields, item_id of type int, and item of type Item. 
 
@@ -94,3 +94,46 @@ Each route function returns an HTTP file provided under the ../templates directo
 - Created an app and provided *HTMLResponse* as the response class, which is a way to tell the route function that its rendering an HTML file. 
 - Created an asynchronous function to define the logic for each route. Asynchronous functions in Python allow you to perform non-blocking operations, such as waiting for external resources like databases or APIs, without blocking the execution of the entire program. Using asynchronous functions can improve the scalability and responsiveness of your application. When you mark a function as async, it becomes capable of running concurrently with other tasks, which is particularly useful for I/O-bound operations like waiting for a database query or an HTTP request.
 - Called the TemplateResponse method of the templates object and provided the name of the html file, as well as the context being returned, which is an object of the *Request* class in this case. This object will be automatically injected when the route is called. The context dictionary is a set of key-value pairs that we can provide to the template. These key-value pairs act as variables that the template can access and use while rendering the template. In this case, when we're passing an object of the Request class to the TemplateResponse method, we're making the details of the HTTP request available to be used in this template. Imagine a scenario where we'd like to display the user's IP address in the screen. We can add the following to our HTML body: ```<p>Your IP address: {{ request.client.host }}</p>```
+## Advancing the Routes
+In many real-life scenarios, we would like to display a list of items on the home page. In the below exercise we will display on the page page all items of a Python list. Within the home page template, we loop through the items and create a separate hyperlink for each item. This link will direct the user to a separate page corresponding to more details of that item. We need to make sure the items are made available to the home page template file through the method explained above. Here's how to loop through the items in HTML: 
+```
+<ul>
+    {% for item in items %}
+        <li>
+            <a href="/item/{{item.id}}">{{item.name}}</a><br>
+                {{item.description}}
+        </li>
+    {% endfor %}
+</ul> 
+```
+Note that the item details, such as the id and the name are encapsulated within the link above. This mean that when the user clicks on the link, the the item_id parameter (see the codes below) is automatically populated in path. We would then have to define the route logic for each item, so that when the /item/item_id pattern is requested by the client, details of that item gets desplayed. Here's the final code: 
+```
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+
+app = FastAPI()
+templates = Jinja2Templates(directory="../templates")
+
+# Define a list of items (for demonstration purposes)
+items = [
+    {"id": 1, "name": "Item 1", "description": "Description of Item 1"},
+    {"id": 2, "name": "Item 2", "description": "Description of Item 2"},
+    {"id": 3, "name": "Item 3", "description": "Description of Item 3"},
+]
+
+# Home page containing all items
+@app.get("/", response_class=HTMLResponse)
+async def read_root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request, "items": items})
+
+# Route logic for each item
+@app.get("/item/{item_id}", response_class=HTMLResponse)
+async def read_detail(request: Request, item_id: int):
+
+    item = next((item for item in items if item["id"] == item_id), None)
+    if item:
+        return templates.TemplateResponse("index_details.html", {"request": request, "item": item})
+    print(f"Item {item_id} not found!")
+```
+See the template details under the ```../templates``` directory to see how the item components are accessed in the ```index.html``` and ```index_details.html``` files. 
