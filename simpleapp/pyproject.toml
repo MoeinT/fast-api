@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "fast-api"
+name = "myapp"
 version = "0.1.0"
 description = ""
 authors = ["Moein"]
@@ -12,6 +12,8 @@ fastapi = "^0.103.1"
 jinja2 = "^3.1.2"
 sqlalchemy = "^2.0.20"
 psycopg2 = "^2.9.7"
+isort = "^5.12.0"
+black = "^23.9.0"
 
 
 [build-system]

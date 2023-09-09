@@ -6,14 +6,22 @@
 <body>
     <h1>Welcome to Our Website!</h1>
     <h2>Items</h2>
-    <ul>
+    <h3>
+        {% for item in items %}
+            <li>
+                <a href="/items/{{item.id}}">{{item.name}}</a><br>
+                {{item.description}}
+            </li>
+        {% endfor %}  
+    </h3>
+    <!-- <ul>
         {% for item in items %}
             <li>
                 <a href="/item/{{item.id}}">{{item.name}}</a><br>
                     {{item.description}}
             </li>
         {% endfor %}
-    </ul>
+    </ul> -->
     <a href="/about">About Us</a>
     <br>
     <a href="/contact">Contact Us</a>
