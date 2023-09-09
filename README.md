@@ -153,5 +153,5 @@ We integrated the database with our FastAPI application, ensuring seamless inter
 ### Providing Item Details
 Lastly, we created hyperlinks for each item, allowing users to access more detailed information about individual items. This user-friendly interface enhancement enhances the usability and functionality of our FastAPI application.
 
-In summary, this FastAPI exercise demonstrates the integration of a PostgreSQL database into a FastAPI application, showcasing how to create a database model, populate it with data, and connect it to your API. The implementation includes a user-friendly interface with hyperlinks to access additional item details, making it a practical foundation for more complex web applications.
+In summary, this FastAPI exercise demonstrates the integration of a PostgreSQL database into a FastAPI application, showcasing how to create a database model, populate it with data, and connect it to your API. The implementation includes a user-friendly interface with hyperlinks to access additional item details, making it a practical foundation for more complex web applications. 
 
