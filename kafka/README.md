@@ -22,5 +22,45 @@ Each Kafka broker in your cluster is called a bootstrap server. In this cluster 
 ### Topic Replication Factor
 Topics need to have a replication factor greater than one, usually between two and three and most commonly at three. So that way, if a broker is down, that means a Kafka server is stopped for maintenance or for a technical issue. Then another Kafka broker still has a copy of the data to serve and receive. So, it's possible for brokers to replicate data from other brokers. **As a general rule, for a replication factor of N, we can permanently lose up to N-1 brokers and still recover your data.**
 
-An important thing to note is that at any given time, only 1 broker can be a leader of a partition (the main server that hosts that partition); and the producers can only send data to the leader of a partition. Similarly, consumers will only read data from the leader of a partition by default. 
-Since Kafka 2.4, however, it is possible to configure consumers to read from the closest broker, potentially a replica, to improve latency and improve network costs, especially in the cloud. 
+An important thing to note is that at any given time, only 1 broker can be a leader of a partition (the main server that hosts that partition); and the producers can only send data to the leader of a partition. Similarly, consumers will only read data from the leader of a partition by default.
+Since Kafka 2.4, however, it is possible to configure consumers to read from the closest broker, potentially a replica, to improve latency and improve network costs, especially in the cloud.
+
+# Kafka Docker Compose Quickstart
+This guide will walk you through setting up a simple Kafka cluster using Docker Compose, creating a Kafka topic, producing a message, and consuming that message.
+
+### Prerequisites
+Before you begin, make sure you have the following installed on your system:
+
+- Docker
+- Docker Compose
+
+### Understanding the docker-compose.yml File
+We used Docker Compose to pull the Zookeeper and Kafka images and run them as Docker Containers. Here we'll go through the services specified in the docker-compose-yml file:
+
+#### Zookeeper
+ZooKeeper is a distributed coordination service required by Kafka for managing distributed brokers. It helps maintain metadata, leader election, and synchronization in a Kafka cluster. We used and pulled the ```confluentinc/cp-zookeeper:7.0.0``` image from Dockerhub. Read their [official page](https://hub.docker.com/_/zookeeper) on Dockerhub for more details. 
+#### Kafka Service
+Kafka is the core message broker responsible for managing topics, partitions, and message distribution within the Kafka cluster. It relies on ZooKeeper for coordination and management.
+
+### Creating a Topic
+Follow the below steps to create a topic: 
+- In order to get the two services up & running, run the ```docker-compose up -d``` command. 
+- Once that's done, go inside the container using the below command:
+
+````docker exec -it <image_id> sh```
+
+- Once inside the container create a topic and provide the name, number of partitions, and a replication factor for that topic hosted inside the broker using the below command: 
+
+```kafka-topics --create --topic my-topic --partitions 1 --replication-factor 1 --if-not-exists --bootstrap-server kafka:9092```
+
+### Producing and consuming a message
+In order to understand a simple flow of stream from a producer, into a topic, and then to a consumer, we'll send a simple "Hello, world" to a topic:
+- Create a producer using the below command and start writing out your message in the console:
+
+```kafka-console-producer --bootstrap-server kafka:9092 --topic my-topic```
+
+- Once the message are sent out, create a consumer using the bellow command:
+
+```kafka-console-consumer --bootstrap-server kafka:9092 --topic my-topic --from-beginning```
+
+By running the last command, you must be able to see the messages. 
