@@ -47,7 +47,7 @@ Follow the below steps to create a topic:
 - In order to get the two services up & running, run the ```docker-compose up -d``` command. 
 - Once that's done, go inside the container using the below command:
 
-````docker exec -it <image_id> sh```
+```docker exec -it <image_id> sh```
 
 - Once inside the container create a topic and provide the name, number of partitions, and a replication factor for that topic hosted inside the broker using the below command: 
 
