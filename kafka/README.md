@@ -46,13 +46,21 @@ Kafka is the core message broker responsible for managing topics, partitions, an
 Follow the below steps to create a topic: 
 - In order to get the two services up & running, run the ```docker-compose up -d``` command. 
 - Once that's done, go inside the container using the below command:
-```docker exec -it <image_id> sh```
+```
+docker exec -it <image_id> sh
+```
 - Once inside the container create a topic and provide the name, number of partitions, and a replication factor for that topic hosted inside the broker using the below command: 
-```kafka-topics --create --topic my-topic --partitions 1 --replication-factor 1 --if-not-exists --bootstrap-server kafka:9092```
+```
+kafka-topics --create --topic my-topic --partitions 1 --replication-factor 1 --if-not-exists --bootstrap-server kafka:9092
+```
 ### Producing and consuming a message
 In order to understand a simple flow of stream from a producer, into a topic, and then to a consumer, we'll send a simple "Hello, world" to a topic:
 - Create a producer using the below command and start writing out your message in the console:
-```kafka-console-producer --bootstrap-server kafka:9092 --topic my-topic```
+```
+kafka-console-producer --bootstrap-server kafka:9092 --topic my-topic
+```
 - Once the message are sent out, create a consumer using the bellow command:
-```kafka-console-consumer --bootstrap-server kafka:9092 --topic my-topic --from-beginning```
+```
+kafka-console-consumer --bootstrap-server kafka:9092 --topic my-topic --from-beginning
+```
 By running the last command, you must be able to see the messages. 
