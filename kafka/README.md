@@ -21,9 +21,25 @@ Serialization is a crucial aspect of Kafka's design because it ensures that mess
 Each Kafka broker in your cluster is called a bootstrap server. In this cluster of brokers, we only need to connect to this one broker and then the clients will know how to be connected to the entire cluster. So, the Kafka client is going to initiate a connection into this broker, as well as a metadata request; once successful, the bootstrap server is going to return the list of all the brokers in the cluster. When the client has access to that metadate, it will know to which broker it'll need to connect, and which partitions are hosted into which broker. This metadate is available to each broker within the cluster, meaning that the brokers are fully aware of one another within the cluster. 
 ### Topic Replication Factor
 Topics need to have a replication factor greater than one, usually between two and three and most commonly at three. So that way, if a broker is down, that means a Kafka server is stopped for maintenance or for a technical issue. Then another Kafka broker still has a copy of the data to serve and receive. So, it's possible for brokers to replicate data from other brokers. **As a general rule, for a replication factor of N, we can permanently lose up to N-1 brokers and still recover your data.**
+### acknowledgments 
+Here's what acks can be set to, along with their meanings:
+
+- acks=0: The producer does not wait for any acknowledgment from the broker. It sends the message and does not care about whether it's received or not. This setting provides the lowest latency but offers no durability guarantees.
+
+- acks=1: The producer waits for an acknowledgment from the leader broker. This means that the message is considered sent once it reaches the leader. It provides a balance between low latency and some level of durability.
+
+- acks=all (or acks=-1): The producer waits for acknowledgment from all in-sync replicas (ISR) of the partition. This setting ensures the highest level of durability because the message is only considered sent when it's received and acknowledged by all replicas in the ISR. It offers the strongest durability guarantees but can introduce higher latency compared to the other settings.
+
+Setting acks=all is a good choice when data integrity and durability are critical, and you can tolerate the additional latency introduced by waiting for acknowledgments from all replicas. However, keep in mind that it may have an impact on the overall throughput and latency of your Kafka producer, so you should consider your use case and requirements when selecting the appropriate acks setting.
 
 An important thing to note is that at any given time, only 1 broker can be a leader of a partition (the main server that hosts that partition); and the producers can only send data to the leader of a partition. Similarly, consumers will only read data from the leader of a partition by default.
 Since Kafka 2.4, however, it is possible to configure consumers to read from the closest broker, potentially a replica, to improve latency and improve network costs, especially in the cloud.
+
+# Kafka CLI
+Use the ```kafka-topics``` command to get a list of all possible kafka-topics possible command. In the following commands, we assume there's a Bootstrap server up & running called: ```kafka:9092```. 
+- Get a list of all existing topics in your broker: ```kafka-topics --list  --bootstrap-server kafka:9092```. 
+- In order to create a producer and send messages to a topic, use the following command: ```kafka-console-producer --bootstrap-server <server_name> --topic <topic_name>```. 
+- In order to further consume from that topic, use the ```kafka-console-consumer --bootstrap-server <server_name> --topic <topic_name>  --from-beginning``` command. The ```--from-beginning``` argument will read If you need to read from a specific partition, use the ```--partition <parttition_id>``` argument. 
 
 # Kafka Docker Compose Quickstart
 This guide will walk you through setting up a simple Kafka cluster using Docker Compose, creating a Kafka topic, producing a message, and consuming that message.
@@ -53,14 +69,18 @@ docker exec -it <image_id> sh
 ```
 kafka-topics --create --topic my-topic --partitions 1 --replication-factor 1 --if-not-exists --bootstrap-server kafka:9092
 ```
+Once the partition created, we can use the ```--describe``` argument to see more details about the topic, such as the number of partitions in that topic, the leader broker hosting that partition, and the brokers hosting the replications. So, we can see 
+
 ### Producing and consuming a message
 In order to understand a simple flow of stream from a producer, into a topic, and then to a consumer, we'll send a simple "Hello, world" to a topic:
 - Create a producer using the below command and start writing out your message in the console:
 ```
 kafka-console-producer --bootstrap-server kafka:9092 --topic my-topic
 ```
+**NOTE -** Use the ```--producer-property acks=all``` to provide different acknowledgment levels. 
 - Once the message are sent out, create a consumer using the bellow command:
 ```
 kafka-console-consumer --bootstrap-server kafka:9092 --topic my-topic --from-beginning
 ```
 By running the last command, you must be able to see the messages. 
+**NOTE -** If there are multiple partitions in topic and no key has been specified, the messages will be randomly distributed to the partitions, and the messages ordering is not gaurantined across partitions. Make sure to provide a key to the messages if messages of similar keys should logically end up in the same partition.
