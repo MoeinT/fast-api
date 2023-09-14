@@ -39,7 +39,7 @@ Since Kafka 2.4, however, it is possible to configure consumers to read from the
 Use the ```kafka-topics``` command to get a list of all possible kafka-topics possible command. In the following commands, we assume there's a Bootstrap server up & running called: ```kafka:9092```. 
 - Get a list of all existing topics in your broker: 
 ```
-kafka-topics --list  --bootstrap-server kafka:9092
+kafka-topics --list  --bootstrap-server <server_name>
 ``` 
 - In order to create a producer and send messages to a topic, use the following command: 
 ```
@@ -49,12 +49,13 @@ kafka-console-producer --bootstrap-server <server_name> --topic <topic_name>
 ```
 kafka-console-consumer --bootstrap-server <server_name> --topic <topic_name>  --from-beginning
 ``` 
-The ```--from-beginning``` argument will read If you need to read from a specific partition, use the ```--partition <parttition_id>``` argument. 
+The ```--from-beginning``` argument will read all available messages in the topic. If you need to read from a specific partition, use the ```--partition <parttition_id>``` argument. We can also use the ```--property print.key=true``` argument to print the keys along with the values.
 - In order to produce messages with keys, use the below command: 
 ```
-kafka-console-producer --bootstrap-server kafka1:9092 --topic my-topic -property parse.key=true -property key.separator=:
+kafka-console-producer --bootstrap-server <server_name> --topic <topic_name> -property parse.key=true -property key.separator=:
 ```
 We passed the ```-property parse.key=true``` argument to specify that the message is associated with a key, and the ```-property key.separator=:``` argument to specify that the key and the value are separated with a semi-column. 
+
 
 # Kafka Docker Compose Quickstart
 This guide will walk you through setting up a simple Kafka cluster using Docker Compose, creating a Kafka topic, producing a message, and consuming that message.
