@@ -41,13 +41,18 @@ Use the ```kafka-topics``` command to get a list of all possible kafka-topics po
 ```
 kafka-topics --list  --bootstrap-server <server_name>
 ``` 
+- We can create a topic using the below command:
+```
+kafka-topics --create --topic <topic_name> --partitions 1 --replication-factor 1 --if-not-exists --bootstrap-server <server_name>
+Use the ```--partitions``` and ```--replication-factor``` arguments to choose the right number of partitions and replication factor for the topics.
+```
 - In order to create a producer and send messages to a topic, use the following command: 
 ```
 kafka-console-producer --bootstrap-server <server_name> --topic <topic_name>
 ``` 
-- In order to further consume from that topic, use the command:
+- In order to further consume from that topic, use the below command:
 ```
-kafka-console-consumer --bootstrap-server <server_name> --topic <topic_name>  --from-beginning
+kafka-console-consumer --bootstrap-server <server_name> --topic <topic_name> --formatter kafka.tools.DefaultMessageFormatter --property print.key=true --property print.value=true --property print.partition=true --property print.timestamp=true --from-beginning
 ``` 
 The ```--from-beginning``` argument will read all available messages in the topic. If you need to read from a specific partition, use the ```--partition <parttition_id>``` argument. We can also use the ```--property print.key=true``` argument to print the keys along with the values.
 - In order to produce messages with keys, use the below command: 
