@@ -13,6 +13,7 @@ Offset is a unique identifier within a message in a topic. Consummers keep track
 Producers write data to partitions within a topic. This means that the client application (producer) knows in advance on which partition it's sending the data to, and which message broker is accommodating that partition. Producers can choose to send messages along with a message key. If they provide this optional parameter, messages with similar keys will end up in the same partition, thanks to a hashing strategy. 
 ### Consumers 
 Consumers make requests to the topic brokers, the servers, and get a response back. This is called the pull model. A consumer can choose which partition to read the data from. In case there's a server failure on that partition, consumers know how to recover from it. Within each partitions, the offsets will be read in order. The data is read is bytes format, and the key-values will be deserialized by the consumer into their native format (int, string, etc.). The consumers know the expected format of the key values and choose the right serializer accordingly; this mean that the moment the topic is created, we must not change the data type in order to not break the consumer. So, in case you'd like to change the data type, we must create a new topic with the desired data type.
+**NOTE -** Each consumer will only read from the last commited offset; so, for a consumer that has already consumed all the messages, the --from-beginning argument will not be taken into account.
 ### Key & value
 In Kafka, each message consists of a key and a value. Both the key and value can be serialized separately. The key is typically used for partitioning messages, while the value carries the actual data.
 ### Kafka Message serielization and deserielization
@@ -44,8 +45,8 @@ kafka-topics --list  --bootstrap-server <server_name>
 - We can create a topic using the below command:
 ```
 kafka-topics --create --topic <topic_name> --partitions 1 --replication-factor 1 --if-not-exists --bootstrap-server <server_name>
-Use the ```--partitions``` and ```--replication-factor``` arguments to choose the right number of partitions and replication factor for the topics.
 ```
+Use the ```--partitions``` and ```--replication-factor``` arguments to choose the right number of partitions and replication factor for the topics.
 - In order to create a producer and send messages to a topic, use the following command: 
 ```
 kafka-console-producer --bootstrap-server <server_name> --topic <topic_name>
@@ -54,54 +55,40 @@ kafka-console-producer --bootstrap-server <server_name> --topic <topic_name>
 ```
 kafka-console-consumer --bootstrap-server <server_name> --topic <topic_name> --formatter kafka.tools.DefaultMessageFormatter --property print.key=true --property print.value=true --property print.partition=true --property print.timestamp=true --from-beginning
 ``` 
-The ```--from-beginning``` argument will read all available messages in the topic. If you need to read from a specific partition, use the ```--partition <parttition_id>``` argument. We can also use the ```--property print.key=true``` argument to print the keys along with the values.
+The ```--from-beginning``` argument will read all available messages in the topic. If you need to read from a specific partition, use the ```--partition <parttition_id>``` argument. We can also use the ```--property print.key=true``` argument to print the keys along with the values. Also, in order to create multiple consumers within a group to scale the read operations, we can use the ```--group <group_name>``` argument. In this way, each consumer will read from a separate partition scaling the Kafka application. 
 - In order to produce messages with keys, use the below command: 
 ```
 kafka-console-producer --bootstrap-server <server_name> --topic <topic_name> -property parse.key=true -property key.separator=:
 ```
 We passed the ```-property parse.key=true``` argument to specify that the message is associated with a key, and the ```-property key.separator=:``` argument to specify that the key and the value are separated with a semi-column. 
+**NOTE -** In order to producer the messages randomly to all partitions, use the ```--producer-property partitioner.class=org.apache.kafka.clients.proer.RoundRobinPartitioner``` argument. This will not be useful in production, but it allows you to observe how multiple consumers in a consumer group would read from all partitions.
 
-
+- Consumer groups are an import concepts in Kafka for scaling the read operations. Multiple consumer groups can be set up to read from multiple partitions in a kafka topic. Here are a few details about the consumer group CLI commands: 
+```
+kafka-consumer-groups --list --bootstrap-server <server_name>
+```
+- Use the below command to get more details on every consumer within that group. We can see details like what partition each consumer is reading from, what's the current offset within that partition, and the Lag associated to that consumer, meaning the number of messages that have been produced, but not yes consumed by that consumer. 
+```
+kafka-consumer-groups --group <group_name> --bootstrap-server <server_name> --describe
+```
+- Use the below command to reset the offsets of a consumer group to be able to ingest the messages from the beginning: 
+```
+kafka-consumer-groups --bootstrap-server <server_name> --group <group_name> --topic <topic_name> --reset-offsets --to-earliest --execute
+```
 # Kafka Docker Compose Quickstart
 This guide will walk you through setting up a simple Kafka cluster using Docker Compose, creating a Kafka topic, producing a message, and consuming that message.
-
 ### Prerequisites
 Before you begin, make sure you have the following installed on your system:
-
 - Docker
 - Docker Compose
-
 ### Understanding the docker-compose.yml File
 We used Docker Compose to pull the Zookeeper and Kafka images and run them as Docker Containers. Here we'll go through the services specified in the docker-compose-yml file:
-
 #### Zookeeper
 ZooKeeper is a distributed coordination service required by Kafka for managing distributed brokers. It helps maintain metadata, leader election, and synchronization in a Kafka cluster. We used and pulled the ```confluentinc/cp-zookeeper:7.0.0``` image from Dockerhub. Read their [official page](https://hub.docker.com/_/zookeeper) on Dockerhub for more details. 
 #### Kafka Service
 Kafka is the core message broker responsible for managing topics, partitions, and message distribution within the Kafka cluster. It relies on ZooKeeper for coordination and management.
-
-### Creating a Topic
-Follow the below steps to create a topic: 
-- In order to get the two services up & running, run the ```docker-compose up -d``` command. 
-- Once that's done, go inside the container using the below command:
+#### Starting up the clusters
+In order to get the two services up & running, run the ```docker-compose up -d``` command. Once that's done, go inside the container using the below command. Once inside the container we're ready to run Kafka CLI commands.
 ```
 docker exec -it <image_id> sh
 ```
-- Once inside the container create a topic and provide the name, number of partitions, and a replication factor for that topic hosted inside the broker using the below command: 
-```
-kafka-topics --create --topic my-topic --partitions 1 --replication-factor 1 --if-not-exists --bootstrap-server kafka:9092
-```
-Once the partition created, we can use the ```--describe``` argument to see more details about the topic, such as the number of partitions in that topic, the leader broker hosting that partition, and the brokers hosting the replications. So, we can see 
-
-### Producing and consuming a message
-In order to understand a simple flow of stream from a producer, into a topic, and then to a consumer, we'll send a simple "Hello, world" to a topic:
-- Create a producer using the below command and start writing out your message in the console:
-```
-kafka-console-producer --bootstrap-server kafka:9092 --topic my-topic
-```
-**NOTE -** Use the ```--producer-property acks=all``` to provide different acknowledgment levels. 
-- Once the message are sent out, create a consumer using the bellow command:
-```
-kafka-console-consumer --bootstrap-server kafka:9092 --topic my-topic --from-beginning
-```
-By running the last command, you must be able to see the messages. 
-**NOTE -** If there are multiple partitions in topic and no key has been specified, the messages will be randomly distributed to the partitions, and the messages ordering is not gaurantined across partitions. Make sure to provide a key to the messages if messages of similar keys should logically end up in the same partition.
