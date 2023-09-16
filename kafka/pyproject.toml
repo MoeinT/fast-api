@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "kafka"
+version = "0.1.0"
+description = ""
+authors = ["Moein"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+confluent-kafka = "^2.2.0"
+kafka-python = "^2.0.2"
+pykafka = "^2.8.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
