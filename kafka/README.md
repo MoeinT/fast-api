@@ -63,7 +63,7 @@ kafka-console-producer --bootstrap-server <server_name> --topic <topic_name> -pr
 We passed the ```-property parse.key=true``` argument to specify that the message is associated with a key, and the ```-property key.separator=:``` argument to specify that the key and the value are separated with a semi-column. 
 **NOTE -** In order to producer the messages randomly to all partitions, use the ```--producer-property partitioner.class=org.apache.kafka.clients.proer.RoundRobinPartitioner``` argument. This will not be useful in production, but it allows you to observe how multiple consumers in a consumer group would read from all partitions.
 
-- Consumer groups are an import concepts in Kafka for scaling the read operations. Multiple consumer groups can be set up to read from multiple partitions in a kafka topic. Here are a few details about the consumer group CLI commands: 
+- Consumer groups are an important concept in Kafka for scaling the read operations. Multiple consumers can be set up within a group to read from multiple partitions in a kafka topic. Use the below command to get a list of consumer groups:
 ```
 kafka-consumer-groups --list --bootstrap-server <server_name>
 ```
