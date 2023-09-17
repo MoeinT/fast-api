@@ -82,13 +82,13 @@ Before you begin, make sure you have the following installed on your system:
 - Docker
 - Docker Compose
 ### Understanding the docker-compose.yml File
-We used Docker Compose to pull the Zookeeper and Kafka images and run them as Docker Containers. Here we'll go through the services specified in the docker-compose-yml file:
+We used Docker Compose to pull the Zookeeper and Kafka images and run them as Docker Containers. We've used [this](https://github.com/conduktor/kafka-stack-docker-compose/blob/master/full-stack.yml) configuration file; we'll go through the services specified in this file:
 #### Zookeeper
 ZooKeeper is a distributed coordination service required by Kafka for managing distributed brokers. It helps maintain metadata, leader election, and synchronization in a Kafka cluster. We used and pulled the ```confluentinc/cp-zookeeper:7.0.0``` image from Dockerhub. Read their [official page](https://hub.docker.com/_/zookeeper) on Dockerhub for more details. 
 #### Kafka Service
 Kafka is the core message broker responsible for managing topics, partitions, and message distribution within the Kafka cluster. It relies on ZooKeeper for coordination and management.
+#### Advertised listeners
+Once we have the cluster up & running, we would like to communicate to it through the local machine. We would like to programmatically send data to a topic using python. The Kafka cluster will be running inside the container, which is an isolated environement, and is not normally known to the host machine, however, by adding and external listerner and exposing its port, we'll be able to communicate with the broker through the host machine. In the configuration file we've added the following external listener and exposed its port: ```EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092```. So, 127.0.0.1:9092 (127.0.0.1 is the default port in case DOCKER_HOST_IP has not been defined) will be used as a bootstrap server in our python code.
 #### Starting up the clusters
-In order to get the two services up & running, run the ```docker-compose up -d``` command. Once that's done, go inside the container using the below command. Once inside the container we're ready to run Kafka CLI commands.
-```
-docker exec -it <image_id> sh
-```
+In order to get the two services up & running, run the ```docker-compose up -d``` command. Once that's done, go inside the container by running ```docker exec -it <image_id> sh```. Once inside the container we're ready to run Kafka CLI commands.
+## 
